@@ -1,0 +1,10 @@
+<launch>
+	<arg name="pkg_name" default="r200_avoidance" />
+	<arg name="node_name" default="obstacle_avoidance"/>
+
+	<remap from="$(arg node_name)/image_color" to="/camera/color/image_raw"/>
+	<remap from="$(arg node_name)/image_depth" to="/camera/depth/image_raw"/>
+	<node name="$(arg node_name)" pkg="$(arg pkg_name)" type="$(arg node_name).py" output="screen">
+	</node>
+
+</launch>
