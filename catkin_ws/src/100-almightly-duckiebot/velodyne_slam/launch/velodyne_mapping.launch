@@ -1,5 +1,0 @@
-<launch>
-	<node pkg="velodyne_slam" type="lidarMapping" name="lidarMapping" output="screen">
-		<remap from="/lidarMapping/velodyne_points" to="/velodyne_points"/>
-	</node>
-</launch>
