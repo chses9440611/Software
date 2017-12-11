@@ -3,9 +3,9 @@
 	<arg name="pkg_name" default="agv_wheel_driver"/>
 	<arg name="node_name" default="pulse_generator_node"/>
 	<arg name="veh" doc="Name of vehicle"/>
+	<arg name="config" default="baseline"/>
 
 	<node ns="$(arg veh)" pkg="$(arg pkg_name)" name="$(arg node_name)" type="$(arg node_name).py" output="screen" clear_params="true" required="true">
-		
 	</node>
 
 </launch>
