@@ -29,11 +29,11 @@ Constant values:
 """
 class AgvWheelDriverNode(object):
 	def __init__(self):
-		self.node_name = self.get_name()
+		self.node_name = rospy.get_name()
 		rospy.loginfo("[%s] Initializing " %(self.node_name))
 
-		self.config_path = self.get_param("~config_path")
-		self.veh_name = self.get_param("~veh_name")
+		self.config_path = rospy.get_param("~config_path")
+		self.veh_name = rospy.get_param("~veh_name")
 
 		self.fname = None
 		self.ps = Pulse([5, 6, 13, 19])
@@ -43,6 +43,7 @@ class AgvWheelDriverNode(object):
 		self.kEncRes = self.setup_parameter('~kEncRes', 1024)
 		self.kSmpTime = self.setup_parameter('~kSmpTime', 10)
 		self.kMaxVel = self.setup_parameter('~kMaxVel', 40)
+		self.updatekMaxPPMS()
 		
 		self.srv_kRadius = rospy.Service("~set_kRadius", SetValue, self.cbSrvSetkRadius)
 		self.srv_kEncRes = rospy.Service("set_kEncRes", SetValue, self.cbSrvSetkEncRes)
@@ -51,24 +52,24 @@ class AgvWheelDriverNode(object):
 		self.srv_save_param = rospy.Service('~save_param', Empty, self.cbSrvSaveParam)
 
 		#Subsriber
-		self.sub_carcmd = rospy.Subsriber("~car_cmd", Twist2DStamped, cbCarcmd, queue_size=1)
+		self.sub_carcmd = rospy.Subscriber("~car_cmd", Twist2DStamped, self.cbCarcmd, queue_size=1)
 
 	def cbCarcmd(self, msg):
 		rospy.loginfo("velocity: [%f] omega: [%f]" %(msg.v, msg.omega))
 		if msg.v == 0:
-			self.ps.set_speed([int(-0.5*msg.omega*kMaxPPMS), int(-0.5*msg.omega*kMaxPPMS)]) 
+			self.ps.set_speed([int(-0.5*msg.omega*self.kMaxPPMS), int(-0.5*msg.omega*self.kMaxPPMS)]) 
 		else:
-			self.ps.set_speed([int(-msg.v*kMaxPPMS), int(msg.v*kMaxPPMS)])
+			self.ps.set_speed([int(-msg.v*self.kMaxPPMS), int(msg.v*self.kMaxPPMS)])
 
 	def readParamFromFile(self):
 		#check the file 
-		self.fname = fname_
 		fname_ = self.config_path + self.veh_name + ".yaml"
+		self.fname = fname_
 		if not os.path.isfile(fname_):
 			rospy.logwarn("[%s] %s does not exist. Using default.yaml." %(self.node_name,fname_))
 			fname_ = self.config_path + "default.yaml"
 
-		with open(fname, 'r') as in_file:
+		with open(fname_, 'r') as in_file:
 			try:
 				yaml_ = yaml.load(in_file)
 			except yaml.YAMLError as exc:
@@ -137,10 +138,9 @@ class AgvWheelDriverNode(object):
 		rospy.loginfo("[%s] Shutdown." %(self.node_name))
 
 
-if __name__ == 'main':
-	#rospy.init_node("agv_wheel_driver", anonymous=False, disable_signals=True)
+if __name__ == "__main__":
+	rospy.init_node("agv_wheel_driver", anonymous=False, disable_signals=True)
 
-	rospy.init_node("agv_wheel_driver", anonymous=False)
 	wheel_driver = AgvWheelDriverNode()
 	rospy.on_shutdown(wheel_driver.onShutdown)
 	rospy.spin()
