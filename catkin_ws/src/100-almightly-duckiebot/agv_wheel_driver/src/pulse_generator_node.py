@@ -86,7 +86,7 @@ class AgvWheelDriverNode(object):
 				rospy.set_param("~"+param_name, value)
 
 
-	def cbSrvSaveParam(self):
+	def cbSrvSaveParam(self, req):
 		data={
 			"kRadius": self.kRadius,
 			"kEncRes": self.kEncRes,
