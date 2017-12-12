@@ -1,0 +1,8 @@
+ #kRadius : Wheel's radius (cm). 
+ #kEncRes : Encoder resolution.
+ #kSmpTime: Sampling Time (ms).
+ #kMaxVel : Max cartesian velocity (km/h).
+kRadius: 8.5
+kEncRes: 1024
+kSmpTime: 10
+kMaxVel: 40
