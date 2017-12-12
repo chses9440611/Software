@@ -14,6 +14,7 @@ class Pulse:
 		self.pulse = numpy.zeros(2, numpy.int)
 		self.cond = [threading.Condition() for _ in range(2)]
 		self.task_end = False
+		self.kMaxPPMS = 0
 		self.threads = []
 		for i in range(2):
 			self.threads.append(threading.Thread(target=self.generator, args=(i,)))
@@ -26,7 +27,7 @@ class Pulse:
 		print "Pulse:Ctrl+C to terminate."
  
 	def updatekMaxPPMS(self, value):
-		kMaxPPMS = value
+		self.kMaxPPMS = value
 
 	def dtor(self, signal, frame):
 		print "Pulse:Close background threads."
@@ -65,8 +66,8 @@ class Pulse:
 				GPIO.output(gpio[1], neg_dir)
 				pulse = abs(pulse)
 
-				if pulse > kMaxPPMS:
-					pulse = int(kMaxPPMS)
+				if pulse > self.kMaxPPMS:
+					pulse = int(self.kMaxPPMS)
 
 		# 50% duty cycle time (us).
 				duty_time = 500.0*kSmpTime / (2*pulse)
