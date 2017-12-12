@@ -30,7 +30,13 @@ class JoyMapperNode(object):
 		car_cmd_msg.omega = msg.axes[3] * self.omega_gain
 		self.pub_car_cmd.publish(car_cmd_msg)
 
+	def onShutdown(self):
+		rospy.loginfo('[%s] Closing Control Node.' %(self.node_name))
+		self.is_shutdown=True
+		rospy.loginfo("[%s] Shutdown." %(self.node_name))
+
 if __name__ == "__main__":
-	rospy.init_node("agv_joy_mapper",anonymous=False)
+	rospy.init_node('agv_joy_mapper', anonymous=False)
 	agv_joy_mapper = JoyMapperNode()
+	rospy.on_shutdown(agv_joy_mapper.onShutdown)
 	rospy.spin()

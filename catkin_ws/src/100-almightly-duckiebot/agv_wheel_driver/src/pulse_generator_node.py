@@ -138,6 +138,8 @@ class AgvWheelDriverNode(object):
 
 
 if __name__ == 'main':
+	#rospy.init_node("agv_wheel_driver", anonymous=False, disable_signals=True)
+
 	rospy.init_node("agv_wheel_driver", anonymous=False)
 	wheel_driver = AgvWheelDriverNode()
 	rospy.on_shutdown(wheel_driver.onShutdown)

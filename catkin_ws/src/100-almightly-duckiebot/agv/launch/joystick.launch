@@ -18,10 +18,9 @@
     </include>	
 
     <!--pulse_generator -->
-    <remap from="pulse_generator_node/car_cmd" to="agv_joy_mapper_node/car_cmd"/>
-    <include file="$(find agv_wheel_driver)/launch/agv_wheel_driver.launch">
-        <arg name="veh" value="$(arg veh)"/>
-        <arg name="config" value="$(arg config)"/>
-    </include>	
-
+	<remap from="pulse_generator_node/car_cmd" to="agv_joy_mapper_node/car_cmd"/>
+	<include file="$(find agv_wheel_driver)/launch/agv_wheel_driver.launch">
+		<arg name="veh" value="$(arg veh)"/>
+		<arg name="config" value="$(arg config)"/>
+	</include>	
 </launch>
