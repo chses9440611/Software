@@ -25,6 +25,8 @@ class Pulse:
 		signal.signal(signal.SIGINT, self.dtor)
 		print "Pulse:Ctrl+C to terminate."
  
+	def updatekMaxPPMS(self, value):
+		kMaxPPMS = value
 
 	def dtor(self, signal, frame):
 		print "Pulse:Close background threads."

@@ -121,6 +121,7 @@ class AgvWheelDriverNode(object):
 
 	def updatekMaxPPMS(self):
 		self.kMaxPPMS = self.kMaxVel*self.kSmpTime/36.0 / (2*math.pi*self.kRadius) * self.kEncRes
+		self.ps.updatekMaxPPMS()
 		self.printValues()
 
 	def printValues(self):
