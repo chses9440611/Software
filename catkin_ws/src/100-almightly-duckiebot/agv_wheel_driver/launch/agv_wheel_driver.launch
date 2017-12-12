@@ -6,6 +6,8 @@
 	<arg name="config" default="baseline"/>
 
 	<node ns="$(arg veh)" pkg="$(arg pkg_name)" name="$(arg node_name)" type="$(arg node_name).py" output="screen" clear_params="true" required="true">
+		<param name="config_path" value="$(find agv)/config/$(arg config)/$(arg pkg_name)/$(arg node_name)/" />
+		<param name="veh_name" value="$(arg veh)"/>
 	</node>
 
 </launch>

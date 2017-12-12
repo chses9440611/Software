@@ -13,6 +13,7 @@ import yaml
 import threading
 import RPi.GPIO as GPIO
 import rospy
+import os
 from geometry_msgs.msg import Twist
 from duckietown_msgs.srv import SetValue, SetValueRequest, SetValueResponse
 from std_srvs.srv import EmptyRequest, EmptyResponse, Empty
@@ -29,8 +30,9 @@ class AgvWheelDriverNode(object):
 	def __init__(self):
 		self.node_name = self.get_name()
 		rospy.loginfo("[%s] Initializing " %(self.node_name))
-		self.veh_name = self.
 
+		self.config_path = self.get_param("~config_path")
+		self.veh_name = self.get_param("~veh_name")
 		self.readParamFromFile()
 
 		self.kRadius = self.setup_parameter('~kRadius', 8.5)
@@ -45,6 +47,14 @@ class AgvWheelDriverNode(object):
 		self.srv_save_param = rospy.Service('~save_param', Empty, self.cbSrvSaveParam)
 
 	def readParamFromFile(self):
+		#check the file 
+		file_exist = True
+		if not os.path.isfile(self.config_path):
+            rospy.logwarn("[%s] %s does not exist. Using default.yaml." %(self.node_name,fname))
+            file_exist = False
+
+        if file_exist == False:
+        	spilt = file_exist.spilt("/")
 
 
 
