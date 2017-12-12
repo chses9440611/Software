@@ -46,7 +46,7 @@ class AgvWheelDriverNode(object):
 		self.updatekMaxPPMS()
 		
 		self.srv_kRadius = rospy.Service("~set_kRadius", SetValue, self.cbSrvSetkRadius)
-		self.srv_kEncRes = rospy.Service("set_kEncRes", SetValue, self.cbSrvSetkEncRes)
+		self.srv_kEncRes = rospy.Service("~set_kEncRes", SetValue, self.cbSrvSetkEncRes)
 		self.srv_kSmpTime = rospy.Service('~set_kSmpTime', SetValue, self.cbSrvSetkSmpTime)
 		self.srv_kMaxVel = rospy.Service('~set_kMaxVel', SetValue, self.cbSrvSetkMaxVel)
 		self.srv_save_param = rospy.Service('~save_param', Empty, self.cbSrvSaveParam)
@@ -98,6 +98,7 @@ class AgvWheelDriverNode(object):
 			out_file.write(yaml.dump(data, default_flow_style=False))
 		self.printValues()
 		rospy.loginfo("[%s] Saved to %s" %(self.node_name, fname_))
+		return EmptyResponse()
 
 	def cbSrvSetkRadius(self, req):
 		self.kRadius = req.value
