@@ -48,13 +48,21 @@ class AgvWheelDriverNode(object):
 
 	def readParamFromFile(self):
 		#check the file 
-		file_exist = True
-		if not os.path.isfile(self.config_path):
+		fname = self.config_path + self.veh_name + ".yaml"
+		if not os.path.isfile(fname):
             rospy.logwarn("[%s] %s does not exist. Using default.yaml." %(self.node_name,fname))
-            file_exist = False
+            fname = self.config_path + "default.yaml"
 
-        if file_exist == False:
-        	spilt = file_exist.spilt("/")
+        with open(fname, 'r') as in_file:
+        	try:
+        		yaml_ = yaml.load(in_file)
+            except yaml.YAMLError as exc:
+                rospy.logfatal("[%s] YAML syntax error. File: %s fname. Exc: %s" %(self.node_name, fname, exc))
+                rospy.signal_shutdown()
+                return
+
+        if yaml_ is None:
+             	
 
 
 
