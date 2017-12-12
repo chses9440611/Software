@@ -3,10 +3,11 @@
 	<arg name="veh" doc="Name of vehicle"/>
 	<arg name="config" default="baseline"/>
 	<arg name="joy_mapper_param_file_name" default="default"/>
+    <arg name="joy_param_file_name" default="default"/>
 
 	<!-- joy -->
 	<node ns="$(arg veh)" pkg="joy" type="joy_node" name="joy" output="screen">
-		<rosparam command="load" file="$(find duckietown)/config/$(arg config)/joy/joy_node/$(arg param_file_name).yaml"/>
+		<rosparam command="load" file="$(find duckietown)/config/$(arg config)/joy/joy_node/$(arg joy_param_file_name).yaml"/>
 	</node>
 
     <!-- joy_mapper -->

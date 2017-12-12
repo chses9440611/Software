@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from sensor_msgs.msg import Joy
 from duckietown_msgs.msg import  Twist2DStamped
 import numpy as np
