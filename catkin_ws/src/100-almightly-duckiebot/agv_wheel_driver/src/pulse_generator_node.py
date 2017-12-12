@@ -112,6 +112,7 @@ class AgvWheelDriverNode(object):
 	def cbSrvSetkSmpTime(self, req):
 		self.kSmpTime = req.value
 		self.updatekMaxPPMS()
+		self.ps.updatekSmpTime(self.kSmpTime)
 		return SetValueResponse()
 
 	def cbSrvSetkMaxVel(self, req):
