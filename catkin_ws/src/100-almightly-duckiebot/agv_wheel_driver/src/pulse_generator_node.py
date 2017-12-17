@@ -18,7 +18,7 @@ import os
 from duckietown_msgs.msg import Twist2DStamped
 from duckietown_msgs.srv import SetValue, SetValueRequest, SetValueResponse
 from std_srvs.srv import EmptyRequest, EmptyResponse, Empty
-import pulse from Pulse
+from pulse import Pulse
 """
 Constant values:
  kRadius : Wheel's radius (cm). 
@@ -35,16 +35,10 @@ class AgvWheelDriverNode(object):
 		self.config_path = rospy.get_param("~config_path")
 		self.veh_name = rospy.get_param("~veh_name")
 		
-
+		self.ps = Pulse([5 ,6, 13, 19])
 		self.fname = None
 		self.v = 0
 		self.omega = 0
-		#open new thread for timer
-		self.ps = Pulse([5, 6, 13, 19])
-		self.thread = threading.Thread(target = counter)
-		self.thread.start()
-		time.sleep(0.2)
-
 		self.readParamFromFile()
 
 		self.kRadius = self.setup_parameter('~kRadius', 8.5)
@@ -53,6 +47,11 @@ class AgvWheelDriverNode(object):
 		self.kMaxVel = self.setup_parameter('~kMaxVel', 40)
 		self.updatekMaxPPMS()
 		
+		#open new thread
+		self.thread = threading.Thread(target = self.counter)
+		self.thread.start()
+		time.sleep(0.2)
+
 		self.srv_kRadius = rospy.Service("~set_kRadius", SetValue, self.cbSrvSetkRadius)
 		self.srv_kEncRes = rospy.Service("~set_kEncRes", SetValue, self.cbSrvSetkEncRes)
 		self.srv_kSmpTime = rospy.Service('~set_kSmpTime', SetValue, self.cbSrvSetkSmpTime)
@@ -63,18 +62,20 @@ class AgvWheelDriverNode(object):
 		self.sub_carcmd = rospy.Subscriber("~car_cmd", Twist2DStamped, self.cbCarcmd, queue_size=1)
 
 	def counter(self):
+		
+		rospy.loginfo("[%s] Timer Start " %(self.node_name))
 		tStart = time.time()
 		while 1:
 			tEnd = time.time()
 			duration = tEnd - tStart
 			if duration > 0.3:
+				tStart = time.time()
 				self.threadSetSpeed()
 
 	def threadSetSpeed(self):
-		if self.v == 0:
-			self.ps.set_speed([int(-0.5*self.omega*self.kMaxPPMS), int(-0.5*self.omega*self.kMaxPPMS)]) 
-		else:
-			self.ps.set_speed([int(-self.v*self.kMaxPPMS), int(self.v*self.kMaxPPMS)])
+
+		#rospy.loginfo("[%s] Set speed " %(self.node_name))
+		self.ps.set_speed([int(-(self.v+self.omega)*self.kMaxPPMS), int((self.v-self.omega)*self.kMaxPPMS)])
 
 
 	def cbCarcmd(self, msg):
