@@ -71,6 +71,11 @@ class AgvWheelDriverNode(object):
 			if duration > 0.3:
 				tStart = time.time()
 				self.threadSetSpeed()
+			if self.is_shutdown == True:
+				break
+				
+		self.thread.join()
+		time.sleep(1)
 
 	def threadSetSpeed(self):
 
@@ -158,9 +163,6 @@ class AgvWheelDriverNode(object):
 		return value
 
 	def onShutdown(self):
-		self.thread.stop()
-		self.thread.join()
-		time.sleep(2)
 		rospy.loginfo('[%s] Closing Control Node.' %(self.node_name))
 		self.is_shutdown=True
 		rospy.loginfo("[%s] Shutdown." %(self.node_name))
