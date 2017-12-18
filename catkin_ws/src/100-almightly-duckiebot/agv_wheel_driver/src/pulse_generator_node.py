@@ -158,11 +158,12 @@ class AgvWheelDriverNode(object):
 		return value
 
 	def onShutdown(self):
+		self.thread.stop()
+		self.thread.join()
+		time.sleep(2)
 		rospy.loginfo('[%s] Closing Control Node.' %(self.node_name))
 		self.is_shutdown=True
 		rospy.loginfo("[%s] Shutdown." %(self.node_name))
-		self.thread.stop()
-		self.thread.join()
 
 
 if __name__ == "__main__":
