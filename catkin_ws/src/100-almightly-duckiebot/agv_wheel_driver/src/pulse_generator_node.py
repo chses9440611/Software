@@ -48,6 +48,9 @@ class AgvWheelDriverNode(object):
 		self.kMaxVel = self.setup_parameter('~kMaxVel', 40)
 		self.updatekMaxPPMS()
 		
+		#Publisher
+		self.pub_wheelcmd = rospy.Publisher("~wheel_cmd", WheelsCmdStamped, queue_size=1)
+
 		#open new thread
 		self.thread = threading.Thread(target = self.counter)
 		self.thread.start()
@@ -62,7 +65,6 @@ class AgvWheelDriverNode(object):
 		#Subsriber
 		self.sub_carcmd = rospy.Subscriber("~car_cmd", Twist2DStamped, self.cbCarcmd, queue_size=1)
 
-		self.pub_wheelcmd = rospy.Publisher("~wheel_cmd", WheelsCmdStamped, queue_size=1)
 
 	def counter(self):
 		
@@ -93,7 +95,7 @@ class AgvWheelDriverNode(object):
 		self.pub_wheelcmd.publish(wheelcmd)
 
 	def cbCarcmd(self, msg):
-		rospy.loginfo("velocity: [%f] omega: [%f]" %(msg.v, msg.omega))
+		#rospy.loginfo("velocity: [%f] omega: [%f]" %(msg.v, msg.omega))
 		self.v = msg.v
 		self.omega = msg.omega
 
