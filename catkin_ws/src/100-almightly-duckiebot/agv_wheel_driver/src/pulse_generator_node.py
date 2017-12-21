@@ -15,7 +15,7 @@ import RPi.GPIO as GPIO
 import rospy
 import time
 import os
-from duckietown_msgs.msg import Twist2DStamped
+from duckietown_msgs.msg import Twist2DStamped, WheelsCmdStamped
 from duckietown_msgs.srv import SetValue, SetValueRequest, SetValueResponse
 from std_srvs.srv import EmptyRequest, EmptyResponse, Empty
 from pulse import Pulse
@@ -62,6 +62,8 @@ class AgvWheelDriverNode(object):
 		#Subsriber
 		self.sub_carcmd = rospy.Subscriber("~car_cmd", Twist2DStamped, self.cbCarcmd, queue_size=1)
 
+		self.pub_wheelcmd = rospy.Publisher("~wheel_cmd", WheelsCmdStamped, queue_size=1)
+
 	def counter(self):
 		
 		rospy.loginfo("[%s] Timer Start " %(self.node_name))
@@ -81,8 +83,14 @@ class AgvWheelDriverNode(object):
 	def threadSetSpeed(self):
 
 		#rospy.loginfo("[%s] Set speed " %(self.node_name))
-		self.ps.set_speed([int(-(self.v+self.omega)*self.kMaxPPMS), int((self.v-self.omega)*self.kMaxPPMS)])
-
+		left = int(-(self.v+self.omega)*self.kMaxPPMS)
+		right = int((self.v-self.omega)*self.kMaxPPMS)
+		self.ps.set_speed([left, right])
+		
+		wheelcmd = WheelsCmdStamped()
+		wheelcmd.vel_left = left
+		wheelcmd.vel_right = right
+		self.pub_wheelcmd.publish(wheelcmd)
 
 	def cbCarcmd(self, msg):
 		rospy.loginfo("velocity: [%f] omega: [%f]" %(msg.v, msg.omega))
