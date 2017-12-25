@@ -4,7 +4,7 @@
 	<arg name="node_name" default="wheel_odometry_node"/>
 	<arg name="veh" doc="Name of vehicle"/>
 
-	<remap from="pulse_generator_node/wheel_cmd" to="wheel_odometry_node/wheel_cmd"/>
+	<remap from="wheel_odometry_node/wheel_cmd" to="pulse_generator_node/wheel_cmd"/>
 	<node ns="$(arg veh)" pkg="$(arg pkg_name)" name="$(arg node_name)" type="$(arg node_name)" output="screen" clear_params="true" required="true">
 	</node>
 

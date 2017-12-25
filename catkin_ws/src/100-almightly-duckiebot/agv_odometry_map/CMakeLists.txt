@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   visualization_msgs
+  nav_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -73,7 +74,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
-#   duckietown_msgs#   geometry_msgs#   std_msgs#   visualization_msgs
+#   duckietown_msgs#   geometry_msgs#   std_msgs#   visualization_msgs# nav_msgs
 # )
 
 ################################################
@@ -108,7 +109,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES agv_odometry
-#  CATKIN_DEPENDS duckietown_msgs geometry_msgs roscpp rospy std_msgs visualization_msgs
+#  CATKIN_DEPENDS duckietown_msgs geometry_msgs roscpp rospy std_msgs visualization_msgs nav_msgs
 #  DEPENDS system_lib
 )
 
