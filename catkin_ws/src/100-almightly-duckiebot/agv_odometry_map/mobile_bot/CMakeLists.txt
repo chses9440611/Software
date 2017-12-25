@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(agv_odometry_map)
+project(mobile_bot)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -7,16 +7,7 @@ project(agv_odometry_map)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS
-  duckietown_msgs
-  geometry_msgs
-  roscpp
-  rospy
-  std_msgs
-  visualization_msgs
-  nav_msgs
-  tf
-)
+find_package(catkin REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -75,7 +66,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
-#   duckietown_msgs#   geometry_msgs#   std_msgs#   visualization_msgs# nav_msgs
+#   std_msgs  # Or other packages containing msgs
 # )
 
 ################################################
@@ -103,14 +94,14 @@ find_package(catkin REQUIRED COMPONENTS
 ###################################
 ## The catkin_package macro generates cmake config files for your package
 ## Declare things to be passed to dependent projects
-## INCLUDE_DIRS: uncomment this if your package contains header files
+## INCLUDE_DIRS: uncomment this if you package contains header files
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES agv_odometry
-#  CATKIN_DEPENDS duckietown_msgs geometry_msgs roscpp rospy std_msgs visualization_msgs nav_msgs
+#  LIBRARIES mobile_bot
+#  CATKIN_DEPENDS other_catkin_pkg
 #  DEPENDS system_lib
 )
 
@@ -122,12 +113,12 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
 # include
-  ${catkin_INCLUDE_DIRS}
+# ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/agv_odometry.cpp
+#   src/${PROJECT_NAME}/mobile_bot.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -138,8 +129,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(wheel_odometry_node src/wheel_odometry_node.cpp)
-target_link_libraries(wheel_odometry_node ${catkin_LIBRARIES})
+# add_executable(${PROJECT_NAME}_node src/mobile_bot_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -196,7 +186,7 @@ target_link_libraries(wheel_odometry_node ${catkin_LIBRARIES})
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_agv_odometry.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_mobile_bot.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

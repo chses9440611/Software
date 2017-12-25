@@ -1,40 +1,48 @@
 #include <ros/ros.h>
 #include <visualization_msgs/Marker.h>
 #include <nav_msgs/Odometry.h>
+#include <math.h>
+#include <tf/transform_broadcaster.h>
+
 #include "duckietown_msgs/WheelsCmdStamped.h"
-struct distance
+struct Point
 {
-	float dis_left;
-	float dis_right;
+	float x;
+	float y;
 };
-distance wheel;
+struct Position
+{
+	Point left;
+	Point right;
+	Point mid;
+};
+Position wheel_pos;
 float agv_width = 50; //cm
+
 ros::Publisher pub_odom ;
+ros::Publisher pub_tf;
+
 void drawWheelOdometry(const duckietown_msgs::WheelsCmdStamped::ConstPtr msg)
 {
-	float left = msg->vel_left;
-	float right = msg->vel_right;
-	//convert pulse to length(cm)
-	wheel.dis_left = left / 4096 * 8.5 * 2 * 3.14 ;	
-	wheel.dis_right = right / 4096 * 8.5 * 2 * 3.14 ;
+	//convert pulse to length(m)
+	tf::TransformBroadcaster br;
+	tf::Transform transform;
+	tf::Quaternion q;
+	float left = msg->vel_left / 4096 * 8.5 * 2 * 3.14 / 100;
+	float right = msg->vel_right / 4096 * 8.5 * 2 * 3.14 / 100;
+	float r = (left < right) ? (-0.5 * left / right) : (0.5 * right / left);
+	float theta = left / r ; //(rad)
+	if (r == 1)
+	{
+		theta = 0;
+	}
+	
+	transform.setOrigin(tf::Vector3(wheel_pos.mid.x, wheel_pos.mid.y, 0));
+  	q.setRPY(0 ,0, theta);
+  	transform.setRotation(q);
 
-
-	nav_msgs::Odometry odom;
-	odom.header.stamp = msg->header.stamp;
-	odom.header.frame_id = "odom";
-	odom.child_frame_id = "base_link";
-
-    odom.pose.pose.position.x = 1;
-    odom.pose.pose.position.y = 2;
-    odom.pose.pose.position.z = 0.0;
-    odom.pose.pose.orientation = 1;
-
-    odom.twist.twist.linear.x = 0.1;
-    odom.twist.twist.linear.y = 0.1;
-    odom.twist.twist.angular.z = 0;
-  
-
-	pub_odom.publish(odom);
+  	br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", "agv"));
+	
 }
 void cbWheelCmd(const duckietown_msgs::WheelsCmdStamped::ConstPtr& msg)
 {
@@ -43,10 +51,17 @@ void cbWheelCmd(const duckietown_msgs::WheelsCmdStamped::ConstPtr& msg)
 int main(int argc, char** argv)
 {
 	ros::init(argc, argv, "wheel_odometry_node");
+
+	wheel_pos.left.x = 0;
+	wheel_pos.left.y = 0;
+	wheel_pos.right.x = 0;
+	wheel_pos.right.y = 0;
+	wheel_pos.mid.x = 0;
+	wheel_pos.mid.y = 0;
+
 	ros::NodeHandle nh("~");
 	
 	ros::Subscriber sub_wheel_cmd = nh.subscribe("wheel_cmd", 1000, cbWheelCmd);
-	
 	pub_odom = nh.advertise<nav_msgs::Odometry>("wheel_odometry", 1000);
 	ros::spin();
 
