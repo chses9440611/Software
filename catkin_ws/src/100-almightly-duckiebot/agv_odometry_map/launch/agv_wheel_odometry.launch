@@ -6,6 +6,7 @@
 
 	<remap from="wheel_odometry_node/wheel_cmd" to="pulse_generator_node/wheel_cmd"/>
 	<node ns="$(arg veh)" pkg="$(arg pkg_name)" name="$(arg node_name)" type="$(arg node_name)" output="screen" clear_params="true" required="true">
+		<param name="veh_name" value="$(arg veh)"/>
 	</node>
 
 </launch>
