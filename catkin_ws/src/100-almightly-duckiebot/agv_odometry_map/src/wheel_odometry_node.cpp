@@ -6,6 +6,8 @@
 #include <tf/transform_listener.h>
 #include "duckietown_msgs/WheelsCmdStamped.h"
 #include <sensor_msgs/LaserScan.h>
+#include <geometry_msgs/Pose2D.h>
+
 using namespace std;
 #define WIDTH 0.5 // (m)
 #define WHEEL_RADIUS 0.085
@@ -21,6 +23,8 @@ Point wheel_pos, wheel_pos_record;
 std::string bot_name;
 std::string node_name;
 ros::Publisher pub_odom;
+ros::Publisher pub_marker;
+ros::Publisher pub_pose;
 tf::TransformBroadcaster* br;
 
 void drawWheelOdom()
@@ -42,6 +46,46 @@ void drawWheelOdom()
     odom.twist.twist.angular.z = (wheel_pos_record.th - wheel_pos.th) * 1/dt;
 
   	pub_odom.publish(odom);
+}
+void drawLaserScan(const sensor_msgs::LaserScan::ConstPtr& msg)
+{
+	std::vector<float> ranges = msg->ranges;
+	float angle = 0;
+
+	visualization_msgs::Marker marker;
+	marker.id = 0;
+	marker.ns = "scan_marker";
+	marker.pose.orientation.w = 1;
+	marker.action = visualization_msgs::Marker::ADD;
+	marker.type = visualization_msgs::Marker::POINTS;
+	marker.scale.x = 0.1;
+	marker.scale.y = 0.1;
+	marker.color.g = 1.0f;
+	marker.color.a = 1.0;
+	marker.header.frame_id = "map";
+	marker.header.stamp = wheel_pos.time;
+	marker.lifetime = ros::Duration();
+	// filter far point from laser
+	for (int i = 0; i < ranges.size(); i++)
+	{
+		if (ranges[i] < 7 && ranges[i] > 0.1 )
+		{
+			geometry_msgs::Point p;
+			angle = msg->angle_min + i * msg->angle_increment;
+			float tmp_c = ranges[i] * cos(angle);
+			float tmp_s = ranges[i] * sin(angle);
+			p.x  = wheel_pos.x + tmp_c * cos(wheel_pos.th) + tmp_s * sin(wheel_pos.th);
+			p.y  = wheel_pos.y + tmp_c * sin(wheel_pos.th) + tmp_s * cos(wheel_pos.th);
+			p.z  = 0;
+
+			//cout<<p.x <<" "<< p.y << " " << p.z <<endl;
+			//cout<< "angle = " << angle << " " << ranges[i] * sin(wheel_pos.th)<<endl;
+			marker.points.push_back(p);
+			pub_marker.publish(marker);
+		}
+
+	}
+	
 }
 void tfWheelOdomSender(const duckietown_msgs::WheelsCmdStamped::ConstPtr msg)
 {
@@ -74,16 +118,15 @@ void tfWheelOdomSender(const duckietown_msgs::WheelsCmdStamped::ConstPtr msg)
   	}
 
 	drawWheelOdom();
-
+	
 }
 void cbWheelCmd(const duckietown_msgs::WheelsCmdStamped::ConstPtr& msg)
 {
 	tfWheelOdomSender(msg);
 }
-void cbLaserScan(const sensor_msgs::LaserScanStamped:;ConstPtr& msg)
+void cbLaserScan(const sensor_msgs::LaserScan::ConstPtr& msg)
 {
-
-
+	drawLaserScan(msg);
 }
 int main(int argc, char** argv)
 {
@@ -104,6 +147,9 @@ int main(int argc, char** argv)
 	ros::Subscriber sub_wheel_cmd = nh.subscribe("wheel_cmd", 1000, cbWheelCmd);
 	ros::Subscriber sub_laser_scan = nh.subscribe("/scan", 1000, cbLaserScan);
 	pub_odom = nh.advertise<nav_msgs::Odometry>("wheel_odometry", 1000);
+	pub_marker = nh.advertise<visualization_msgs::Marker>("laser_scan", 1000);
+	pub_pose = nh.advertise<geometry_msgs::Pose2D>("laser_pose", 1000);
+
 
 	ros::spin();
 
