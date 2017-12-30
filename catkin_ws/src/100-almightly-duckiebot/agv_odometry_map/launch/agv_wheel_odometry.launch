@@ -4,7 +4,8 @@
 	<arg name="node_name" default="wheel_odometry_node"/>
 	<arg name="veh" doc="Name of vehicle"/>
 
-	<node pkg="tf" type="static_transform_publisher" name="$(arg node_name)" args="0 0 0 0 0 0 1 map velodyne 100" />
+	<node pkg="tf" type="static_transform_publisher" name="tf_state_node" args="0 0 0 0 0 0 1 map odom_frame 100" />
+	<node pkg="tf" type="static_transform_publisher" name="tf_state2_node" args="0 0 0.3 0 0 0 1 base_link velodyne 100" />
 	<remap from="wheel_odometry_node/wheel_cmd" to="pulse_generator_node/wheel_cmd"/>
 	<node ns="$(arg veh)" pkg="$(arg pkg_name)" name="$(arg node_name)" type="$(arg node_name)" output="screen" clear_params="true" required="true">
 		<param name="veh_name" value="$(arg veh)"/>
