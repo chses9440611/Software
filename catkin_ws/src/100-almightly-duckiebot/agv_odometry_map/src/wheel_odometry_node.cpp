@@ -71,7 +71,7 @@ void tfWheelOdomSender(const duckietown_msgs::WheelsCmdStamped::ConstPtr msg)
   	try
   	{
   		br->sendTransform(tf::StampedTransform(transform, msg->header.stamp, "map", "base_link"));
-
+  		br->sendTransform(tf::StampedTransform(transform, msg->header.stamp, "map", "velodyne"));
   	}
   	catch(tf::TransformException &ex)
   	{
