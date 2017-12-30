@@ -9,7 +9,7 @@
 #include <geometry_msgs/Pose2D.h>
 
 using namespace std;
-#define WIDTH 0.5 // (m)
+#define WIDTH 0.4 // (m)
 #define WHEEL_RADIUS 0.085
 struct Point
 {
@@ -40,9 +40,9 @@ void drawWheelOdom(const duckietown_msgs::WheelsCmdStamped::ConstPtr msg)
   	float dt = wheel_state.time.toSec() - wheel_state_record.time.toSec();
   	if (dt != 0)	
   	{
-  		odom.twist.twist.linear.x = (wheel_state.x - wheel_state_record.x) * 1/dt;
-    	odom.twist.twist.linear.y = (wheel_state.y - wheel_state_record.y) * 1/dt;
-    	odom.twist.twist.angular.z = (wheel_state.th - wheel_state_record.th) * 1/dt;
+  		odom.twist.twist.linear.x = (wheel_state.x - wheel_state_record.x) * 1/dt ;
+    	odom.twist.twist.linear.y = (wheel_state.y - wheel_state_record.y) * 1/dt ;
+    	odom.twist.twist.angular.z = (wheel_state.th - wheel_state_record.th) * 1/dt ;
   		pub_odom.publish(odom);
   	}
 
