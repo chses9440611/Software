@@ -52,7 +52,8 @@ class AgvWheelDriverNode(object):
 		self.pub_wheelcmd = rospy.Publisher("~wheel_cmd", WheelsCmdStamped, queue_size=1)
 
 		#open new thread
-		rospy.Timer(rospy.Duration(0.2), self.threadSetSpeed)
+		self.thread = threading.Thread(target = self.counter)
+		self.thread.start()
 		time.sleep(0.2)
 
 		self.srv_kRadius = rospy.Service("~set_kRadius", SetValue, self.cbSrvSetkRadius)
@@ -64,7 +65,24 @@ class AgvWheelDriverNode(object):
 		#Subsriber
 		self.sub_carcmd = rospy.Subscriber("~car_cmd", Twist2DStamped, self.cbCarcmd, queue_size=1)
 
-	def threadSetSpeed(self, event):
+
+	def counter(self):
+		
+		rospy.loginfo("[%s] Timer Start " %(self.node_name))
+		tStart = time.time()
+		while 1:
+			tEnd = time.time()
+			duration = tEnd - tStart
+			if duration > 0.3:
+				tStart = time.time()
+				self.threadSetSpeed()
+			if self.shutdown == True:
+				break
+				
+		self.thread.join()
+		time.sleep(1)
+
+	def threadSetSpeed(self):
 
 		#rospy.loginfo("[%s] Set speed " %(self.node_name))
 		left = int(-(self.v+self.omega)*self.kMaxPPMS)
