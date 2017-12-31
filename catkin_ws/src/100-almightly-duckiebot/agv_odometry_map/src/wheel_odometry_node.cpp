@@ -9,8 +9,8 @@
 #include <geometry_msgs/Pose2D.h>
 
 using namespace std;
-#define WIDTH 0.4 // (m)
-#define WHEEL_RADIUS 0.085
+#define WIDTH 0.38 // (m)
+#define WHEEL_RADIUS 0.08
 struct Point
 {
 	float x;
@@ -31,10 +31,10 @@ void drawWheelOdom(const duckietown_msgs::WheelsCmdStamped::ConstPtr msg)
 	odom.header.frame_id = "map";
 	odom.child_frame_id = "odom_frame";
 
-	odom.pose.pose.position.x = wheel_state.x;
-  	odom.pose.pose.position.y = wheel_state.y;
+	odom.pose.pose.position.x = wheel_state_record.x;
+  	odom.pose.pose.position.y = wheel_state_record.y;
   	odom.pose.pose.position.z = 0.0;
-  	odom.pose.pose.orientation = tf::createQuaternionMsgFromYaw(wheel_state.th);
+  	odom.pose.pose.orientation = tf::createQuaternionMsgFromYaw(wheel_state_record.th);
 
   	//cal speed 
   	float dt = wheel_state.time.toSec() - wheel_state_record.time.toSec();
@@ -54,11 +54,17 @@ void tfWheelOdomSender(const duckietown_msgs::WheelsCmdStamped::ConstPtr msg)
 	float dis_R = msg->vel_right / 4096 * WHEEL_RADIUS * 2.0 * 3.14 ;
 
 	wheel_state_record = wheel_state ;
+	float speed ;
+
 	// update wheel pose
-	wheel_state.th += (1/(WIDTH))*(dis_L-dis_R);
-	wheel_state.x += 0.5*(cos(wheel_state.th)*dis_R+cos(wheel_state.th)*dis_L);
-	wheel_state.y += 0.5*(sin(wheel_state.th)*dis_R+sin(wheel_state.th)*dis_L);
 	wheel_state.time = msg->header.stamp;
+	speed = (wheel_state.time.toSec() - wheel_state_record.time.toSec()) * 2.0 ; 
+	//cout<<wheel_state_record.x << "  "<< wheel_state_record.y << "  "<<speed<<endl;
+	
+	wheel_state.th += (1/(WIDTH))*(dis_L-dis_R);
+	wheel_state.x += 0.45 *(cos(wheel_state.th)*dis_R+cos(wheel_state.th)*dis_L) ;
+	wheel_state.y += 0.45 *(sin(wheel_state.th)*dis_R+sin(wheel_state.th)*dis_L) ;
+	
 
 	//cout << wheel_state.x << " " << wheel_state.y << " " << wheel_state.th << "" << endl;
 
@@ -70,8 +76,8 @@ void tfWheelOdomSender(const duckietown_msgs::WheelsCmdStamped::ConstPtr msg)
   	transform.setRotation(q);
   	try
   	{
-  		br->sendTransform(tf::StampedTransform(transform, msg->header.stamp, "map", "base_link"));
-  		br->sendTransform(tf::StampedTransform(transform, msg->header.stamp, "map", "velodyne"));
+  		br->sendTransform(tf::StampedTransform(transform, msg->header.stamp, "map", "base_link_wheel"));
+  		
   	}
   	catch(tf::TransformException &ex)
   	{
