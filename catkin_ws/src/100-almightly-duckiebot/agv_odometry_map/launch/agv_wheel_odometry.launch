@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+	<arg name="pkg_name" default="agv_odometry_map"/>
+	<arg name="node_name" default="wheel_odometry_node"/>
+	<arg name="veh" doc="Name of vehicle"/>
+	
+	<node ns="$(arg veh)" pkg="$(arg pkg_name)" name="$(arg node_name)" type="$(arg node_name)" output="screen" clear_params="true" required="true">
+		<param name="veh_name" value="$(arg veh)"/>
+	</node>
+
+	<!-- Subscriber -->
+	<!-- wheel_odometry_node/wheel_cmd -->
+	
+	<!-- Publish -->
+	<!-- wheel_odometry_node/pub_odom -->	
+</launch>

@@ -72,6 +72,7 @@ class AgvWheelDriverNode(object):
 		self.ps.set_speed([left, right])
 		
 		wheelcmd = WheelsCmdStamped()
+
 		wheelcmd.header.stamp = rospy.Time.now()
 		wheelcmd.vel_left = -left
 		wheelcmd.vel_right = right
