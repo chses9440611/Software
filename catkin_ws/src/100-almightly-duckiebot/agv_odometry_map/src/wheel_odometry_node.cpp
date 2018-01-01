@@ -10,7 +10,7 @@
 
 using namespace std;
 #define WIDTH 0.38 // (m)
-#define WHEEL_RADIUS 0.075
+#define WHEEL_RADIUS 0.08
 struct Point
 {
 	float x;
