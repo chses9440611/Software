@@ -44,4 +44,9 @@
   		<arg name="odom_frame" default="$(arg odom_frame)"/> 
     </include>   
 
+    <!-- hector_slam_2D to Odometry -->
+    <include file="$(find agv_odometry_map)/launch/agv_hector_odometry.launch">
+        <arg name="veh" value="$(arg veh)"/>
+    </include>
+
 </launch>
