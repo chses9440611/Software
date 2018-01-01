@@ -85,6 +85,7 @@ HectorMappingRos::HectorMappingRos()
   private_nh_.param("base_frame", p_base_frame_, std::string("base_link"));
   private_nh_.param("map_frame", p_map_frame_, std::string("map"));
   private_nh_.param("odom_frame", p_odom_frame_, std::string("odom"));
+  private_nh_.param("lidar_frame", p_lidar_frame_, std::string("velodyne"));
 
   private_nh_.param("pub_map_scanmatch_transform", p_pub_map_scanmatch_transform_,true);
   private_nh_.param("tf_map_scanmatch_transform_frame_name", p_tf_map_scanmatch_transform_frame_name_, std::string("scanmatcher_frame"));
@@ -166,6 +167,7 @@ HectorMappingRos::HectorMappingRos()
   ROS_INFO("HectorSM p_base_frame_: %s", p_base_frame_.c_str());
   ROS_INFO("HectorSM p_map_frame_: %s", p_map_frame_.c_str());
   ROS_INFO("HectorSM p_odom_frame_: %s", p_odom_frame_.c_str());
+  ROS_INFO("HectorSM p_lidar_frame_: %s", p_lidar_frame_.c_str());
   ROS_INFO("HectorSM p_scan_topic_: %s", p_scan_topic_.c_str());
   ROS_INFO("HectorSM p_use_tf_scan_transformation_: %s", p_use_tf_scan_transformation_ ? ("true") : ("false"));
   ROS_INFO("HectorSM p_pub_map_odom_transform_: %s", p_pub_map_odom_transform_ ? ("true") : ("false"));
@@ -246,14 +248,14 @@ void HectorMappingRos::scanCallback(const sensor_msgs::LaserScan& scan)
   {
     ros::Duration dur (0.5);
 
-    if (tf_.waitForTransform(p_base_frame_,scan.header.frame_id, scan.header.stamp,dur))
+    if (tf_.waitForTransform(p_base_frame_, p_lidar_frame_, scan.header.stamp,dur))
     {
       tf::StampedTransform laserTransform;
-      tf_.lookupTransform(p_base_frame_,scan.header.frame_id, scan.header.stamp, laserTransform);
+      tf_.lookupTransform(p_base_frame_, p_lidar_frame_, scan.header.stamp, laserTransform);
 
       //projector_.transformLaserScanToPointCloud(p_base_frame_ ,scan, pointCloud,tf_);
       projector_.projectLaser(scan, laser_point_cloud_,30.0);
-
+      laser_point_cloud_.header.frame_id = p_lidar_frame_;
       if (scan_point_cloud_publisher_.getNumSubscribers() > 0){
         scan_point_cloud_publisher_.publish(laser_point_cloud_);
       }
@@ -298,7 +300,7 @@ void HectorMappingRos::scanCallback(const sensor_msgs::LaserScan& scan)
       }
 
     }else{
-      ROS_INFO("lookupTransform %s to %s timed out. Could not transform laser scan into base_frame.", p_base_frame_.c_str(), scan.header.frame_id.c_str());
+      ROS_INFO("lookupTransform %s to %s timed out. Could not transform laser scan into base_frame.", p_base_frame_.c_str(), p_lidar_frame_.c_str());
       return;
     }
   }

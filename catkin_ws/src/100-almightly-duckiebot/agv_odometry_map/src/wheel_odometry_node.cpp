@@ -7,6 +7,7 @@
 #include "duckietown_msgs/WheelsCmdStamped.h"
 #include <sensor_msgs/LaserScan.h>
 #include <geometry_msgs/Pose2D.h>
+#include <ros/console.h>
 
 using namespace std;
 #define WIDTH 0.38 // (m)
@@ -24,7 +25,7 @@ std::string bot_name;
 std::string node_name;
 ros::Publisher pub_odom;
 tf::TransformBroadcaster* br;
-void drawWheelOdom(const duckietown_msgs::WheelsCmdStamped::ConstPtr msg)
+void drawWheelOdom(const duckietown_msgs::WheelsCmdStamped::ConstPtr& msg)
 {
 	nav_msgs::Odometry odom;
 	odom.header.stamp = msg->header.stamp;
@@ -47,7 +48,7 @@ void drawWheelOdom(const duckietown_msgs::WheelsCmdStamped::ConstPtr msg)
   	}
 
 }
-void tfWheelOdomSender(const duckietown_msgs::WheelsCmdStamped::ConstPtr msg)
+void tfWheelOdomSender(const duckietown_msgs::WheelsCmdStamped::ConstPtr& msg)
 {
 	//convert pulse to length(m)
 	float dis_L = msg->vel_left / 4096 * WHEEL_RADIUS * 2.0 * 3.14 ;
@@ -96,6 +97,9 @@ int main(int argc, char** argv)
 	ros::NodeHandle nh("~");
 	tf::TransformBroadcaster br_instance;
 	br = &br_instance;
+
+	std::string name = ros::this_node::getName();
+	ROS_INFO("[%s] Initializing ", name.c_str());
 
 	//Initialize wheel position
 	wheel_state.x = 0.0;

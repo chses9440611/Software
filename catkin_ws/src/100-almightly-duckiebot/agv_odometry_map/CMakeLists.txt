@@ -16,6 +16,8 @@ find_package(catkin REQUIRED COMPONENTS
   visualization_msgs
   nav_msgs
   tf
+  pcl_conversions
+  pcl_ros
 )
 
 ## System dependencies are found with CMake's conventions
@@ -140,6 +142,9 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(wheel_odometry_node src/wheel_odometry_node.cpp)
 target_link_libraries(wheel_odometry_node ${catkin_LIBRARIES})
+
+add_executable(pcl_odometry_node src/pcl_odometry_node.cpp)
+target_link_libraries(pcl_odometry_node ${catkin_LIBRARIES})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

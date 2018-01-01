@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+	<arg name="veh" doc="Name of vehicle"/>
+   	<arg name="base_frame" default="base_link_2Dlidar"/>
+  	<arg name="odom_frame" default="base_link_2Dlidar"/>   
+    <arg name="lidar_frame" default="lidar_laser"/>
+    <node pkg="tf" type="static_transform_publisher" name="tf_state_node" args="0 0 0 0 0 0 1 map odom_frame 100" />
+	<node pkg="tf" type="static_transform_publisher" name="tf_state2_node" args="0 0 0 0 0 0 1 map velodyne 100" />
+    <node pkg="tf" type="static_transform_publisher" name="tf_state3_node" args="0 0 0.3 0 0 0 1 base_link_wheel lidar_wl 100" />	
+	<node pkg="tf" type="static_transform_publisher" name="tf_state4_node" args="0 0 0.3 0 0 0 1 base_link_2Dlidar $(arg lidar_frame) 100" />
+    <node pkg="tf" type="static_transform_publisher" name="tf_state5_node" args="0 0 0.3 0 0 0 1 base_link_3Dlidar lidar_pcl 100" />
+
+	<!-- wheel_odom -->
+	<remap from="wheel_odometry_node/wheel_cmd" to="pulse_generator_node/wheel_cmd"/>
+    <include file="$(find agv_odometry_map)/launch/agv_wheel_odometry.launch">
+        <arg name="veh" value="$(arg veh)"/>
+    </include>
+
+    <!-- hector_slam_2D -->
+    <include file="$(find hector_mapping)/launch/mapping_default.launch">
+        <arg name="base_frame" default="$(arg base_frame)"/>
+  		<arg name="odom_frame" default="$(arg odom_frame)"/> 
+        <arg name="lidar_frame" default="$(arg lidar_frame)"/>
+    </include>   
+
+    <!-- hector_slam_2D to Odometry -->
+    <include file="$(find agv_odometry_map)/launch/agv_hector_odometry.launch">
+        <arg name="veh" value="$(arg veh)"/>
+    </include>
+
+    <!-- PCL 3D to Odometry -->
+    <include file="$(find agv_odometry_map)/launch/agv_pcl_odometry.launch">
+        <arg name="veh" value="$(arg veh)"/>
+    </include>  
+
+</launch>

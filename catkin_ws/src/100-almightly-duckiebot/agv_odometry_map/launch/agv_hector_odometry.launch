@@ -7,4 +7,10 @@
 	<node ns="$(arg veh)" pkg="$(arg pkg_name)" name="$(arg node_name)" type="$(arg node_name).py" output="screen" clear_params="true" required="true">
 	</node>
 
+	<!-- Subscriber -->
+	<!-- /scan-->
+
+	<!-- Publish -->
+	<!-- hector_odometry_node/pub_odom -->	
+
 </launch>

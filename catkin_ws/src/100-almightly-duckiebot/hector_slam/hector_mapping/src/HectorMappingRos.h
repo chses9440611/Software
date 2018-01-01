@@ -147,6 +147,7 @@ protected:
   std::string p_base_frame_;
   std::string p_map_frame_;
   std::string p_odom_frame_;
+  std::string p_lidar_frame_;
 
   //Parameters related to publishing the scanmatcher pose directly via tf
   bool p_pub_map_scanmatch_transform_;
