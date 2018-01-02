@@ -146,6 +146,9 @@ target_link_libraries(wheel_odometry_node ${catkin_LIBRARIES})
 add_executable(pcl_odometry_node src/pcl_odometry_node.cpp)
 target_link_libraries(pcl_odometry_node ${catkin_LIBRARIES})
 
+add_executable(pcl_preprocess_node src/pcl_preprocess_node.cpp)
+target_link_libraries(pcl_preprocess_node ${catkin_LIBRARIES})
+
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use

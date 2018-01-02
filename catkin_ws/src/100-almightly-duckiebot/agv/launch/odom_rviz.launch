@@ -28,7 +28,13 @@
         <arg name="veh" value="$(arg veh)"/>
     </include>
 
+    <!-- PCL Preprocess -->
+    <include file="$(find agv_odometry_map)/launch/agv_pcl_preprocess.launch">
+        <arg name="veh" value="$(arg veh)"/>
+    </include>  
+
     <!-- PCL 3D to Odometry -->
+    <remap from="pcl_odometry_node/cloud_preprocess" to="pcl_preprocess_node/cloud_preprocess"/>
     <include file="$(find agv_odometry_map)/launch/agv_pcl_odometry.launch">
         <arg name="veh" value="$(arg veh)"/>
     </include>  
