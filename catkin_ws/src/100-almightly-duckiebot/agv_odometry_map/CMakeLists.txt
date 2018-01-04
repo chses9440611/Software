@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   nav_msgs
   tf
   pcl_conversions
+  tf_conversions
   pcl_ros
 )
 
