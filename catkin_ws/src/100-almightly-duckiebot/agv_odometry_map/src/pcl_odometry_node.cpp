@@ -23,12 +23,12 @@
 #include <ctime>
 #include <boost/thread/thread.hpp>
 using namespace std;
+
 std::string name;
-ros::Publisher pub_cloud; 
-ros::Publisher pub_cloud_test;                                                       
+ros::Publisher pub_cloud_target; 
+ros::Publisher pub_cloud_test;    
 pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_feature_record(new pcl::PointCloud<pcl::PointXYZ>);
 pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_feature(new pcl::PointCloud<pcl::PointXYZ>);
-pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_map(new pcl::PointCloud<pcl::PointXYZ>);
 tf::TransformBroadcaster* br;
 Eigen::Matrix4f matrix_record;
 
@@ -55,6 +55,65 @@ tf::Transform transformEigenToTF(Eigen::Matrix4f tm)
   	trans.setRotation(tfqt);
 	return trans;
 }
+
+tf::Transform icpWithNormal(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_source, 
+	pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_target)
+{
+	clock_t begin = clock();
+
+	pcl::PointCloud<pcl::PointXYZINormal>::Ptr cloud_icp(new pcl::PointCloud<pcl::PointXYZINormal>);
+	pcl::PointCloud<pcl::PointXYZINormal>::Ptr cloud_test_with_normals(new pcl::PointCloud<pcl::PointXYZINormal>);
+	pcl::PointCloud<pcl::PointXYZINormal>::Ptr cloud_with_source_normals(new pcl::PointCloud<pcl::PointXYZINormal>);
+	pcl::PointCloud<pcl::PointXYZINormal>::Ptr cloud_with_target_normals(new pcl::PointCloud<pcl::PointXYZINormal>);
+
+	pcl::PointCloud<pcl::Normal>::Ptr source_normals(new pcl::PointCloud<pcl::Normal>);
+	pcl::PointCloud<pcl::Normal>::Ptr target_normals (new pcl::PointCloud<pcl::Normal>);
+
+	// normal of PCL and combine to pointxyz
+	pcl::search::KdTree<pcl::PointXYZ>::Ptr tree_xyz(new pcl::search::KdTree<pcl::PointXYZ>);
+	pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> ne_source;
+	ne_source.setInputCloud(cloud_source);
+	ne_source.setSearchMethod(tree_xyz);
+	ne_source.setRadiusSearch(0.2);
+	ne_source.compute(*source_normals);
+	pcl::concatenateFields( *cloud_source, *source_normals, *cloud_with_source_normals );
+
+	pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> ne_target;
+	ne_source.setInputCloud(cloud_target);
+	ne_source.setSearchMethod(tree_xyz);
+	ne_source.setRadiusSearch(0.2);
+	ne_source.compute(*target_normals);
+	pcl::concatenateFields( *cloud_target, *target_normals, *cloud_with_target_normals );
+
+	//ICP
+	pcl::search::KdTree<pcl::PointXYZINormal>::Ptr tree_1(new pcl::search::KdTree<pcl::PointXYZINormal>);
+	pcl::search::KdTree<pcl::PointXYZINormal>::Ptr tree_2(new pcl::search::KdTree<pcl::PointXYZINormal>);
+	tree_1->setInputCloud(cloud_with_source_normals);
+	tree_2->setInputCloud(cloud_with_target_normals);
+	pcl::IterativeClosestPoint<pcl::PointXYZINormal, pcl::PointXYZINormal> icp;
+	icp.setInputCloud(cloud_with_source_normals);
+	icp.setInputTarget(cloud_with_target_normals);
+	icp.setMaxCorrespondenceDistance(1500); 
+	icp.setTransformationEpsilon(1e-10);
+	icp.setEuclideanFitnessEpsilon(0.01);
+	icp.setMaximumIterations(500);
+	icp.align(*cloud_icp);
+
+  	clock_t end = clock();
+	double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+	cout<<"icp compute time = " << elapsed_secs<<endl;
+
+	Eigen::Matrix4f trans_eigen = icp.getFinalTransformation() ;
+	pcl::transformPointCloud(*cloud_with_source_normals, *cloud_test_with_normals, trans_eigen);
+	matrix_record = matrix_record * trans_eigen;
+	tf::Transform trans = transformEigenToTF(matrix_record);
+
+	pub_cloud_test.publish(*cloud_test_with_normals);
+	pub_cloud_target.publish(*cloud_with_target_normals);
+	return trans;
+
+}
+
 tf::Transform icpWithPointXYZ(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_source, 
 	pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_target)
 {
@@ -87,7 +146,7 @@ tf::Transform icpWithPointXYZ(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_source,
 
 
 	pub_cloud_test.publish(*cloud_test);
-	pub_cloud.publish(*cloud_target);
+	pub_cloud_target.publish(*cloud_target);
 	return trans;
 
 }
@@ -95,29 +154,12 @@ tf::Transform icpWithPointXYZ(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_source,
 void cbPointCloud(const sensor_msgs::PointCloud2::ConstPtr& cloud_msg)
 {
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
- 	pcl::PointCloud<pcl::Normal>::Ptr cloud_normals (new pcl::PointCloud<pcl::Normal>);
 
 	pcl::fromROSMsg (*cloud_msg, *cloud);
 	pcl::copyPointCloud(*cloud,*cloud_feature);
-	if(counter == 6)
+	if(counter == 3)
 	{
 		counter = 0;
-
-		// normal of PCL -> feature
-		pcl::search::KdTree<pcl::PointXYZ>::Ptr tree_xyz(new pcl::search::KdTree<pcl::PointXYZ>);
-		pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> ne;
-		ne.setInputCloud(cloud);
-		ne.setSearchMethod(tree_xyz);
-		ne.setRadiusSearch(0.2);
-		ne.compute(*cloud_normals);
-		/*for (int i = 0; i< cloud_normals->points.size(); i++)
-		{
-			cloud_normals->points[i].x = cloud_feature->points[i].x;
-			cloud_normals->points[i].y = cloud_feature->points[i].y;
-			cloud_normals->points[i].z = cloud_feature->points[i].z;
-		}*/
-
-
 		/*
 		// Parameters for sift computation
 		pcl::search::KdTree<pcl::PointNormal>::Ptr tree_sift(new pcl::search::KdTree<pcl::PointNormal>);
@@ -149,6 +191,7 @@ void cbPointCloud(const sensor_msgs::PointCloud2::ConstPtr& cloud_msg)
 
 		}
 		//Visualization
+		/*
 		if (first_Set_Viewer)
 		{
 			first_Set_Viewer = false;
@@ -164,6 +207,8 @@ void cbPointCloud(const sensor_msgs::PointCloud2::ConstPtr& cloud_msg)
 		viewer->removePointCloud ("cloud_normals");
 		viewer->addPointCloudNormals<pcl::PointXYZ,pcl::Normal>(cloud_feature, cloud_normals, 10, 2, "cloud_normals");
 		viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_COLOR, 1, 0, 0, "cloud_normals");
+		*/
+
 		pcl::copyPointCloud(*cloud_feature,*cloud_feature_record);
 
 	}
@@ -198,14 +243,16 @@ int main(int argc, char** argv)
 	}
 
 	ros::Subscriber sub_velodyne_pcl = nh.subscribe("cloud_preprocess", 1000, cbPointCloud);
-	pub_cloud = nh.advertise< pcl::PointCloud<pcl::PointXYZ> >("cloud_out", 1000);
+	pub_cloud_target= nh.advertise< pcl::PointCloud<pcl::PointXYZ> >("cloud_out_target", 1000);
 	pub_cloud_test = nh.advertise< pcl::PointCloud<pcl::PointXYZ> >("cloud_out_test", 1000);
-
+	
+	//Visualization
+	/*
 	viewer->setBackgroundColor (0, 0, 0);
 	viewer->addCoordinateSystem (1.0);
 	viewer->initCameraParameters ();
 	ros::Timer timer = nh.createTimer(ros::Duration(0.1), cbViewer);
-	
+	*/
 	ros::spin();
 
 	return 0;

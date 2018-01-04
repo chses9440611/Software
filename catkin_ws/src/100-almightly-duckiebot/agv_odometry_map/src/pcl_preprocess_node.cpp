@@ -28,7 +28,7 @@ void cbPointCloud(const sensor_msgs::PointCloud2::ConstPtr& cloud_msg)
 		vg.setInputCloud(cloud);
 		vg.setLeafSize (0.05f, 0.05f, 0.05f);
 		vg.filter(*cloud_voxel);
-		float max_range = 10, dis;
+		float max_range = 13, dis;
 		for (int i=0 ; i <  cloud_voxel->points.size() ; i++)
 		{
 			dis = cloud_voxel->points[i].z * cloud_voxel->points[i].z + 
@@ -36,7 +36,7 @@ void cbPointCloud(const sensor_msgs::PointCloud2::ConstPtr& cloud_msg)
 				cloud_voxel->points[i].y * cloud_voxel->points[i].y;
 			dis = sqrt(dis);
 
-			if (cloud_voxel->points[i].z < 0.05 || dis > max_range)
+			if (cloud_voxel->points[i].z < 0.05 || dis > max_range || cloud_voxel->points[i].z > 2.5)
 			{
 				cloud_voxel->points.erase(cloud_voxel->points.begin()+i);
 				cloud_voxel->width -=1 ;
