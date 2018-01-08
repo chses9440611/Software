@@ -27,6 +27,7 @@ void cbPointCloud(const sensor_msgs::PointCloud2::ConstPtr& cloud_msg)
 		pcl::VoxelGrid<pcl::PointXYZ> vg;
 		vg.setInputCloud(cloud);
 		vg.setLeafSize (0.05f, 0.05f, 0.05f);
+		//vg.setLeafSize (0.2f, 0.2f, 0.2f);
 		vg.filter(*cloud_voxel);
 		float max_range = 13, dis;
 		for (int i=0 ; i <  cloud_voxel->points.size() ; i++)
@@ -36,7 +37,7 @@ void cbPointCloud(const sensor_msgs::PointCloud2::ConstPtr& cloud_msg)
 				cloud_voxel->points[i].y * cloud_voxel->points[i].y;
 			dis = sqrt(dis);
 
-			if (cloud_voxel->points[i].z < 0.05 || dis > max_range || cloud_voxel->points[i].z > 2.5)
+			if (dis > max_range || cloud_voxel->points[i].z > 2.5 || cloud_voxel->points[i].z < -0.1)
 			{
 				cloud_voxel->points.erase(cloud_voxel->points.begin()+i);
 				cloud_voxel->width -=1 ;
@@ -46,14 +47,14 @@ void cbPointCloud(const sensor_msgs::PointCloud2::ConstPtr& cloud_msg)
 		}
 
 		// filter outlier 
-		/*
+		
 		pcl::StatisticalOutlierRemoval<pcl::PointXYZ> sor;
 		sor.setInputCloud(cloud_voxel);
 		sor.setMeanK(150);
 		sor.setStddevMulThresh(0.8); 
-		sor.filter(*cloud_outlier); */
+		sor.filter(*cloud_outlier); 
 
-		pub_cloud.publish(*cloud_voxel);
+		pub_cloud.publish(*cloud_outlier);
 	}
 	else
 	{
