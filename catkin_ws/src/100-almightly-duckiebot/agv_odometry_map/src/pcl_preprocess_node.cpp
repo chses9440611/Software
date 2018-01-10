@@ -15,19 +15,22 @@ void cbPointCloud(const sensor_msgs::PointCloud2::ConstPtr& cloud_msg)
 	if(counter != 3)
 	{
 		counter++;
+		sensor_msgs::PointCloud2 cloud_tmp;
 		pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
 		pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_voxel(new pcl::PointCloud<pcl::PointXYZ>);
 		pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_outlier(new pcl::PointCloud<pcl::PointXYZ>);
 		
 
 		// for ros publish PCL
-		pcl::fromROSMsg (*cloud_msg, *cloud);
+		cloud_tmp = *cloud_msg;
+		cloud_tmp.header.frame_id = "lidar_pcl";
+		pcl::fromROSMsg (cloud_tmp, *cloud);
 
 		// Voxel Filter to DownSampling
 		pcl::VoxelGrid<pcl::PointXYZ> vg;
 		vg.setInputCloud(cloud);
 		vg.setLeafSize (0.05f, 0.05f, 0.05f);
-		//vg.setLeafSize (0.2f, 0.2f, 0.2f);
+		//vg.setLeafSize (0.5f, 0.5f, 0.5f);
 		vg.filter(*cloud_voxel);
 		float max_range = 13, dis;
 		for (int i=0 ; i <  cloud_voxel->points.size() ; i++)

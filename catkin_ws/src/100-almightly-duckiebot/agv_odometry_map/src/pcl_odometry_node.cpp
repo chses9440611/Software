@@ -133,7 +133,7 @@ Eigen::Matrix4f transformTFtoEigen(tf::Transform trans)
 	tm = tmp.matrix().cast<float>();
 	tm(0 ,3) = origin.getX();
 	tm(1, 3) = origin.getY();
-	tm(2, 3) = 0;
+	tm(2, 3) = origin.getY();
 	tm(3, 3) = 1;
 	tm(3, 0) = tm(3, 1) = tm(3, 2) = 0;
 	//cout << tm <<endl;
@@ -153,6 +153,12 @@ void setIdentity(Eigen::Matrix4f& trans_eigen)
 	}
 
 }
+void kalmanFilter()
+{
+
+
+
+}
 tf::Transform ndtWithPointXYZ(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_source, 
 	pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_target, Eigen::Matrix4f initial)
 {
@@ -163,8 +169,8 @@ tf::Transform ndtWithPointXYZ(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_source,
 	pcl::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ> ndt;
 	ndt.setTransformationEpsilon (0.01);
 	ndt.setStepSize (0.1);
-	ndt.setResolution (1.0);
-	ndt.setMaximumIterations (30);
+	ndt.setResolution (0.5);
+	ndt.setMaximumIterations (10);
 	ndt.setInputSource (cloud_source);
 	ndt.setInputTarget (cloud_target);
 	ndt.align (*cloud_ndt, initial);
@@ -184,6 +190,34 @@ tf::Transform ndtWithPointXYZ(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_source,
 	
 	return trans;
 }
+void matrix2angle (Eigen::Matrix4f &result_trans,Eigen::Vector3f &result_angle)
+{
+  double ax,ay,az;
+  if (result_trans(2,0)==1 || result_trans(2,0)==-1)
+  {
+      az=0;
+      double dlta;
+      dlta=atan2(result_trans(0,1),result_trans(0,2));
+      if (result_trans(2,0)==-1)
+      {
+          ay=M_PI/2;
+          ax=az+dlta;
+      }
+      else
+      {
+          ay=-M_PI/2;
+          ax=-az+dlta;
+      }
+  }
+  else
+  {
+      ay=-asin(result_trans(2,0));
+      ax=atan2(result_trans(2,1)/cos(ay),result_trans(2,2)/cos(ay));
+      az=atan2(result_trans(1,0)/cos(ay),result_trans(0,0)/cos(ay));
+  }
+  result_angle<<ax,ay,az;
+}
+
 tf::Transform icpWithNormal(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_source, 
 	pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_target, Eigen::Matrix4f initial)
 {
@@ -228,18 +262,35 @@ tf::Transform icpWithNormal(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_source,
 	icp.setEuclideanFitnessEpsilon(0.1);
 	icp.setMaximumIterations(50);
 	icp.setRANSACOutlierRejectionThreshold(0.1);
-	icp.align(*cloud_icp);
+	icp.align(*cloud_icp, initial);
 
 	clock_t end = clock();
 	double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
 	cout<<"icpWithNormal compute time = " << elapsed_secs<<", score =  "<<icp.getFitnessScore() <<endl;
 	Eigen::Matrix4f trans_eigen = icp.getFinalTransformation() ;
+	Eigen::Vector3f ANGLE_origin;
+   	ANGLE_origin<<0,0,M_PI/5;
+	double error_x,error_y,error_z;
+	Eigen::Vector3f ANGLE_result;
+	matrix2angle(trans_eigen,ANGLE_result);
+	error_x=fabs(ANGLE_result(0))-fabs(ANGLE_origin(0));
+	error_y=fabs(ANGLE_result(1))-fabs(ANGLE_origin(1));
+	error_z=fabs(ANGLE_result(2))-fabs(ANGLE_origin(2));
+	//cout<<"error in aixs_x: "<<error_x<<"  error in aixs_y: "<<error_y<<"  error in aixs_z: "<<error_z<<endl;
+
+	/*if ( error_x >= 0.5 || error_y>=0.5)
+		trans_eigen = initial;
+	else if (error_x>=0.3 || error_y>=0.3)
+		trans_eigen = initial*0.5+trans_eigen*0.5;
+	else if (error_x>=0.1 || error_y>=0.1)
+		trans_eigen = initial*0.2+trans_eigen*0.8;
+	else;*/
+	
 	if (icp.getFitnessScore() > 0.7 || trans_eigen(0, 3) > 0.45){
 		//setIdentity(trans_eigen);
 		trans_eigen = initial;
 	}
-	
-	cout << trans_eigen << endl;
+	//cout << trans_eigen << endl;
 	pcl::transformPointCloud(*cloud_with_source_normals, *cloud_test_with_normals, trans_eigen);
 	matrix_record = matrix_record * trans_eigen;
 	tf::Transform trans = transformEigenToTF(matrix_record);
@@ -282,22 +333,30 @@ tf::Transform icpWithPointXYZ(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_source,
 	icp.setInputTarget(cloud_target);
 	icp.setSearchMethodSource(tree_1);
 	icp.setSearchMethodTarget(tree_2);
-	icp.setMaxCorrespondenceDistance(1500); 
-	icp.setTransformationEpsilon(1e-10);
+	icp.setMaxCorrespondenceDistance(500); 
+	icp.setTransformationEpsilon(1e-6);
 	icp.setEuclideanFitnessEpsilon(0.1);
-	icp.setMaximumIterations(600);
-	icp.setRANSACOutlierRejectionThreshold(0.01);
-	icp.align(*cloud_icp);
+	icp.setMaximumIterations(50);
+	icp.setRANSACOutlierRejectionThreshold(0.1);
+	icp.align(*cloud_icp, initial);
 
 	clock_t end = clock();
 	double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
-	cout<<"icpWithNormal compute time = " << elapsed_secs<<", score =  "<<icp.getFitnessScore() <<endl;
+	cout<<"icpWithPointXYZ compute time = " << elapsed_secs<<", score =  "<<icp.getFitnessScore() <<endl;
 	Eigen::Matrix4f trans_eigen = icp.getFinalTransformation() ;
+	Eigen::Vector3f ANGLE_origin;
+   	ANGLE_origin<<0,0,M_PI/5;
+	double error_x,error_y,error_z;
+	Eigen::Vector3f ANGLE_result;
+	matrix2angle(trans_eigen,ANGLE_result);
+	error_x=fabs(ANGLE_result(0))-fabs(ANGLE_origin(0));
+	error_y=fabs(ANGLE_result(1))-fabs(ANGLE_origin(1));
+	error_z=fabs(ANGLE_result(2))-fabs(ANGLE_origin(2));
+	cout<<"error in aixs_x: "<<error_x<<"  error in aixs_y: "<<error_y<<"  error in aixs_z: "<<error_z<<endl;
 	if (icp.getFitnessScore() > 0.7 || trans_eigen(0, 3) > 0.45){
 		//setIdentity(trans_eigen);
 		trans_eigen = initial;
 	}
-	cout<<"icpWithPointXYZ compute time = " << elapsed_secs<<", score =  "<<icp.getFitnessScore() <<endl;
 	//cout << trans_eigen << endl;
 	pcl::transformPointCloud(*cloud_source, *cloud_test, trans_eigen);
 	matrix_record = matrix_record * trans_eigen;
@@ -322,13 +381,13 @@ void cbPointCloud(const sensor_msgs::PointCloud2::ConstPtr& cloud_msg)
 		//ICP
 		tf::StampedTransform listen_trans;
 		try{	
-			listener->waitForTransform("odom_frame", "base_link_wheel",  cloud_msg->header.stamp, ros::Duration(0.5));
-			listener->lookupTransform("odom_frame", "base_link_wheel",  cloud_msg->header.stamp, listen_trans);
+			listener->waitForTransform("odom_frame", "base_link_wheel",  ros::Time(0), ros::Duration(0.5));
+			listener->lookupTransform("odom_frame", "base_link_wheel",   ros::Time(0), listen_trans);
 			wheel_odom_trans = listen_trans;
 			if (cloud_feature_record->points.size() > 0 )
 			{
 				tf::Transform initial = wheel_odom_record_trans.inverseTimes(wheel_odom_trans);
-				tf::Transform trans = ndtWithPointXYZ(cloud_feature, cloud_feature_record, transformTFtoEigen(initial));
+				tf::Transform trans = icpWithPointXYZ(cloud_feature, cloud_feature_record, transformTFtoEigen(initial));
 				try{	
 					br->sendTransform(tf::StampedTransform(trans, cloud_msg->header.stamp, "odom_frame", "base_link_3Dlidar"));
 				}
