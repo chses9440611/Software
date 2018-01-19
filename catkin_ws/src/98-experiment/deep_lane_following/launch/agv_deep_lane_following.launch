@@ -17,7 +17,6 @@
         </include>
     </group>
 
-    #joystick
     <!-- joy -->
     <node ns="$(arg veh)" if="$(arg local)" pkg="joy" type="joy_node" name="joy" output="screen">
         <rosparam command="load" file="$(find duckietown)/config/$(arg config)/joy/joy_node/$(arg param_file_name).yaml"/>
@@ -26,7 +25,6 @@
         <rosparam command="load" file="$(find duckietown)/config/$(arg config)/joy/joy_node/$(arg param_file_name).yaml"/>
     </node>
 
-    #joy mapper
     <!-- joy_mapper -->
     <include file="$(find deep_lane_following)/launch/deep_joy_mapper.launch">
         <arg name="veh" value="$(arg veh)"/>
@@ -35,7 +33,7 @@
         <arg name="param_file_name" value="$(arg joy_mapper_param_file_name)"/>
     </include>
 
-    #NCS prediction
+    <!-- ncs pred -->
     <remap from="ncs_caffe_prediction_node/gain_step" to="deep_joy_mapper_node/gain_step"/> 
     <remap from="ncs_caffe_prediction_node/compressed" to="camera_white_balance_node/image/compressed"/>
     <include file="$(find deep_lane_following)/launch/ncs_caffe_prediction.launch">
@@ -56,12 +54,10 @@
     	<arg name="config" value="$(arg config)"/>
   	</include>
 
-    #car command
     <!-- car_cmd_switch_node -->
 	<remap from="pulse_generator_node/car_cmd" to="state_switch_node/car_cmd"/>
 	<include file="$(find agv_wheel_driver)/launch/agv_wheel_driver.launch">
 		<arg name="veh" value="$(arg veh)"/>
-		<arg name="local" value="$(arg local)"/>
 		<arg name="config" value="$(arg config)"/>
 	</include>
 
