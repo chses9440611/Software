@@ -1,0 +1,9 @@
+<launch>
+	<arg name="veh" doc="Name of vehicle. ex: megaman"/>
+	<arg name="local" default="false" doc="true for running everything you possibly can on laptop. false for everything running on vehicle."/>
+	<arg name="config" default="baseline" doc="Specify a config."/>
+	
+	<node ns="$(arg veh)" pkg="gd_motion" type="gd_text_wheel_cmd_node.py" name="gd_text_wheel_cmd_node" output="screen" clear_params="true" required="true">
+    </node>
+
+</launch>

@@ -1,0 +1,18 @@
+<launch>
+	<arg name="veh" doc="Name of vehicle. ex: megaman"/>
+	<arg name="local" default="false" doc="true for running everything you possibly can on laptop. false for everything running on vehicle."/>
+	<arg name="config" default="baseline" doc="Specify a config."/>
+	<arg name = "param_file_name" default = "default" />
+	<arg name = "classes" default = "3" />
+	<arg name = "motion_mode" default = "0" />
+
+	<arg name = "pkg_name" value = "gd_motion" />
+	<arg name = "node_name" default = "gd_text_unity_car_cmd_node" />
+
+	<!--<remap from="/nibot/gd_text_unity_car_cmd_node/caffe_predictions" to="/nibot/gd_L2R_text_text_node/caffe_predictions" />-->
+	<node ns="$(arg veh)" pkg="$(arg pkg_name)" type="$(arg node_name).py" name="$(arg node_name)" output="screen" clear_params="true" required="true">
+		<rosparam command="load" file="$(find guidedog)/config/$(arg config)/$(arg pkg_name)/gd_text_car_cmd_node/$(arg param_file_name).yaml"/>
+		<param name="~classes" value="$(arg classes)"/>
+		<param name="~motion_mode" value="$(arg motion_mode)"/>
+    </node>
+</launch>

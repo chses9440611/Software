@@ -1,0 +1,38 @@
+<launch>
+    <arg name="veh" doc="Name of vehicle. ex: megaman"/>
+    <arg name="local" default="false" doc="true for running on laptop. false for running on vehicle."/>
+    <arg name="config" default="baseline" doc="Specify a config."/>
+    <arg name="param_file_name" default="default" doc="Specify a param file. ex:megaman." />
+    <arg name="raw" default="false" doc="If set to true, also publish raw image using decoder."/> 
+    <arg name="cam_info" default="true" doc="If set to true, use cam_info_reader_node to pusblish CameraInfo."/>
+    <arg name="live" default="true" doc="live set to false means we don't run the actual camera (i.e. running from a log file" />
+    <arg name="rect" default="false" />
+    <arg name="joy_mapper_param_file_name" default="$(arg param_file_name)" doc="Specify a joy_mapper param file. ex:high_speed" />
+
+    <include file="$(find duckietown)/machines"/>
+
+	<include file="$(find guidedog)/launch/camera_gc.launch">
+    	<arg name="veh" value="$(arg veh)"/>
+    	<arg name="local" value="$(arg local)"/>
+    	<arg name="config" value="$(arg config)"/>
+    	<arg name="param_file_name" value="$(arg param_file_name)"/>
+    	<arg name="raw" value="$(arg raw)"/>
+    	<arg name="cam_info" value="$(arg cam_info)"/> 
+    	<arg name="live" value="$(arg live)"/>
+  	</include>
+
+	<include file="$(find duckietown)/launch/joystick.launch">
+    	<arg name="veh" value="$(arg veh)"/>
+    	<arg name="local" value="$(arg local)"/>
+    	<arg name="config" value="$(arg config)"/>
+    	<arg name="param_file_name" value="$(arg param_file_name)"/>
+  	</include>
+
+    <!-- Carcmd Image Sync -->
+    <remap from="gd_image_carcmd_sync_node/carcmd" to="joy_mapper_node/car_cmd" />
+    <remap from="gd_image_carcmd_sync_node/image" to="camera_node/image/compressed" />
+    <include file="$(find gd_analysis)/launch/gd_image_carcmd_sync_node.launch">
+        <arg name="veh" value="$(arg veh)"/>
+        <arg name="local" value="$(arg local)"/>
+    </include>
+</launch>

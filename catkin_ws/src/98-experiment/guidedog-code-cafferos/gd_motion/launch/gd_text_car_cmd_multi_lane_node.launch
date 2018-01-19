@@ -1,0 +1,13 @@
+<launch>
+	<arg name="veh" doc="Name of vehicle. ex: megaman"/>
+	<arg name="local" default="false" doc="true for running everything you possibly can on laptop. false for everything running on vehicle."/>
+	<arg name="config" default="baseline" doc="Specify a config."/>
+	<arg name = "param_file_name" default = "default" />
+	<arg name = "lane_mode" default = "YB" />
+	<arg name = "pkg_name" value = "gd_motion" />
+	<arg name = "node_name" default = "gd_text_car_cmd_multi_lane_node" />
+
+	<node ns="$(arg veh)" pkg="$(arg pkg_name)" type="gd_text_car_cmd_multi_lane_node.py" name="$(arg node_name)" output="screen" clear_params="true" required="true">
+		<param name="~lane_mode" value="$(arg lane_mode)"/>
+    </node>
+</launch>
