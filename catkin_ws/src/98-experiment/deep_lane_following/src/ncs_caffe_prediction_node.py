@@ -30,7 +30,7 @@ class NcsCaffePredictionNode(object):
 		self.sub_gain_step = rospy.Subscriber("~gain_step", Float32, self.cbGainStep, queue_size=1)
 
 		self.pub_carcmd = rospy.Publisher("~carcmd", Twist2DStamped, queue_size=1)
-		
+		self.pub_prediction = rospy.Publisher("~pred", String, queue_size=1)
 		
 
 	def initial(self):
@@ -116,18 +116,22 @@ class NcsCaffePredictionNode(object):
 		carcmd_msg.header = header
 		carcmd_msg.omega = 0
 		carcmd_msg.v = 0.6 + self.gain_step
-
+		
+		prediction_result = ""
 		for i in range(0, 3):
 			if(order[i]==0): #L
 				carcmd_msg.omega += self.tf_probs2omega(output[order[i]]) * self.omega_weight[0][0]
+				prediction_result += " L = " +str(order[i])
 			elif order[i]==2:#R
 				carcmd_msg.omega += self.tf_probs2omega(output[order[i]]) * self.omega_weight[0][2]
+				prediction_result += " R = " +str(order[i])
 			else:
 				carcmd_msg.omega += self.tf_probs2omega(output[order[i]]) * self.omega_weight[0][1]
+				prediction_result += " S = " +str(order[i])
 		
 		#print 'omega = ', carcmd_msg.omega
 		self.pub_carcmd.publish(carcmd_msg)
-
+		self.pub_prediction.publish(prediction_result)
 				
 	def tf_probs2omega(self, prob):
 		prob_left = 0.2
