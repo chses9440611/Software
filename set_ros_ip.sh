@@ -6,7 +6,7 @@ if [ $# -gt 0 ]; then
 	# provided a hostname, use it as ROS_MASTER_URI
 	export ROS_IP=$1
 else
-	echo "No hostname provided. Using $HOSTNAME."
+	echo "No ROS_IP provided. Using $IP."
 	export ROS_IP=$IP
 fi
 echo "ROS_IP set to $ROS_IP"
