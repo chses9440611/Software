@@ -3,14 +3,11 @@
     <arg name="pkg_name" default="gd_caffe_pred"/>
     <arg name="model_dir" default="/home/"/>
 
-    <group ns="$(arg veh)">
 
-        <!-- caffe prediction -->
-        <remap from="gd_caffe_prediction/compressed" to="gd_camera_white_balance/image/compressed"/>
-        <node ns="$(arg veh)" pkg="$(arg pkg_name)" type="gd_caffe_prediction.py" name="gd_caffe_prediction" output="screen">
-            <param name="model_dir" value="$(arg model_dir)"/>
-        </node>
-
-    </group>
+    <!-- caffe prediction -->
+    <remap from="gd_caffe_prediction/compressed" to="gd_camera_white_balance/image/compressed"/>
+    <node ns="$(arg veh)" pkg="$(arg pkg_name)" type="gd_caffe_prediction.py" name="gd_caffe_prediction" output="screen">
+        <param name="model_dir" value="$(arg model_dir)"/>
+    </node>
 
 </launch>
