@@ -8,11 +8,11 @@
 
     <include unless="$(arg local)" file="$(find duckietown)/machines"/>
     <group ns="$(arg veh)">
+
         <!-- camera -->
         <node ns="$(arg veh)"  pkg="$(arg pkg_name)" type="gd_camera_white_balance.py" name="gd_camera_white_balance" output="screen">
             <rosparam command="load" file="$(find duckietown)/config/$(arg config)/pi_camera/camera_node/$(arg param_file_name).yaml"/>
         </node>
-
 
         <!-- joy -->
         <node ns="$(arg veh)" if="$(arg local)" pkg="joy" type="joy_node" name="joy" output="screen">
@@ -23,9 +23,6 @@
         </node>
 
         <!-- joy mapper -->
-
-        <!-- caffe prediction -->
-        
 
         <!-- control node -->
 
