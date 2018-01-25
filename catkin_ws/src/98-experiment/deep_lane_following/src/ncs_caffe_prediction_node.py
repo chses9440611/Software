@@ -121,13 +121,13 @@ class NcsCaffePredictionNode(object):
 		for i in range(0, 3):
 			if(order[i]==0): #L
 				carcmd_msg.omega += self.tf_probs2omega(output[order[i]]) * self.omega_weight[0][0]
-				prediction_result += " L = " + str(output[order[i]]*100) + '%)
+				prediction_result += " L = " + str(output[order[i]]*100) + "%"
 			elif order[i]==2:#R
 				carcmd_msg.omega += self.tf_probs2omega(output[order[i]]) * self.omega_weight[0][2]
-				prediction_result += " R = " + str(output[order[i]]*100) + '%)
+				prediction_result += " R = " + str(output[order[i]]*100) + "%"
 			else:
 				carcmd_msg.omega += self.tf_probs2omega(output[order[i]]) * self.omega_weight[0][1]
-				prediction_result += " S = " + str(output[order[i]]*100) + '%)
+				prediction_result += " S = " + str(output[order[i]]*100) + "%"
 		
 		#print 'omega = ', carcmd_msg.omega
 		self.pub_carcmd.publish(carcmd_msg)
