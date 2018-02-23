@@ -1,0 +1,6 @@
+[submodule "catkin_ws/src/98-experiment/virtual_lane_following"]
+	path = catkin_ws/src/98-experiment/virtual_lane_following
+	url = git@github.com:tonycar12002/virtual_lane_following.git
+[submodule "catkin_ws/src/98-experiment/deep_lane_following"]
+	path = catkin_ws/src/98-experiment/deep_lane_following
+	url = git@github.com:tonycar12002/deep_lane_following.git
