@@ -16,7 +16,7 @@ class JoyMapperNode(object):
 		self.omega_gain = rospy.get_param("~omega_gain", 0.5)
 
 		# Publications
-		self.pub_car_cmd = rospy.Publisher("~car_cmd", Twist2DStamped, queue_size=1)
+		self.pub_car_cmd = rospy.Publisher("~joy_cmd", Twist2DStamped, queue_size=1)
 		
 		# Subscriptions
 		self.sub_joy = rospy.Subscriber("joy", Joy, self.cbJoy, queue_size=1)

@@ -79,7 +79,7 @@ class AgvWheelDriverNode(object):
 		self.pub_wheelcmd.publish(wheelcmd)
 
 	def cbCarcmd(self, msg):
-		#rospy.loginfo("velocity: [%f] omega: [%f]" %(msg.v, msg.omega))
+		rospy.loginfo("velocity: [%f] omega: [%f] source: [%d]" %(msg.v, msg.omega, msg.source))
 		self.v = msg.v
 		self.omega = msg.omega
 
