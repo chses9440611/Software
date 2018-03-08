@@ -17,7 +17,7 @@ class Test(object):
 
 	def cb_test(self, msg):
 		car_cmd_msg = Twist2DStamped()
-		car_cmd_msg.source = 1 # 1 for joy_stick
+		#car_cmd_msg.source = 1 # 1 for joy_stick
 		car_cmd_msg.v = msg.v
 		car_cmd_msg.omega = msg.omega
 		self.pub_final_cmd.publish(car_cmd_msg)

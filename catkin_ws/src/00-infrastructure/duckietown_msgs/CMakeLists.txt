@@ -29,6 +29,7 @@ add_message_files(
   Pose2DStamped.msg
   SignalsDetection.msg
   Twist2DStamped.msg
+  #  Twist2DStamped_test.msg########################
   AprilTagDetection.msg
   AprilTagDetectionArray.msg
   AprilTagsWithInfos.msg
